@@ -31,7 +31,8 @@ def evaluate_metrics(y_true, y_pred, weight, metrics, **kwargs):
         elif metric == 'auc':
             result[metric] = roc_auc_score(y_true, y_pred, sample_weight=weight)
         elif metric in ["acc", "accuracy", "precision", "recall"]:
-            y_class = np.argmax(y_pred, axis=1)
+            # TODO: threshold based class assignment
+            y_class = (y_pred > 0.5).astype(np.int8)
             if metric in ["acc", "accuracy"]:
                 result[metric] = accuracy_score(y_true, y_class, sample_weight=weight)
             elif metric == "precision":
@@ -42,7 +43,7 @@ def evaluate_metrics(y_true, y_pred, weight, metrics, **kwargs):
             result[metric] = mean_squared_error(y_true, y_pred, sample_weight=weight)
         elif metric == "mae":
             result[metric] = mean_absolute_error(y_true, y_pred, sample_weight=weight)
-        elif metric == ["r2", "r2_score"]:
+        elif metric in ["r2", "r2_score"]:
             result[metric] = r2_score(y_true, y_pred, sample_weight=weight)
         else:
             assert "group_index" in kwargs, "group_index is required for GAUC"
