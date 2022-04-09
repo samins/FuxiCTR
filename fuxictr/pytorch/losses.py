@@ -10,3 +10,14 @@ def weighted_mse_loss(y_pred, y_true, weight, reduction="mean"):
         loss /= torch.sum(weight)
 
     return loss
+
+
+def weighted_mae_loss(y_pred, y_true, weight, reduction="mean"):
+    """
+    Weighed MSA loss
+    """
+    loss = torch.sum(weight * torch.abs(y_pred - y_true))
+    if reduction == "mean":
+        loss /= torch.sum(weight)
+
+    return loss
