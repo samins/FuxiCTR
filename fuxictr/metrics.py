@@ -15,7 +15,8 @@
 # =========================================================================
 
 
-from sklearn.metrics import roc_auc_score, log_loss, accuracy_score
+from sklearn.metrics import(roc_auc_score, log_loss, accuracy_score,
+    precision_score, recall_score, r2_score, mean_squared_error, mean_absolute_error)
 import numpy as np
 import logging
 
@@ -23,13 +24,27 @@ import logging
 def evaluate_metrics(y_true, y_pred, weight, metrics, **kwargs):
     result = dict()
     for metric in metrics:
+        metric = metric.lower()
+
         if metric in ['logloss', 'binary_crossentropy']:
             result[metric] = log_loss(y_true, y_pred, sample_weight=weight, eps=1e-7)
-        elif metric == 'AUC':
+        elif metric == 'auc':
             result[metric] = roc_auc_score(y_true, y_pred, sample_weight=weight)
-        elif metric == "ACC":
-            y_pred = np.argmax(y_pred, axis=1)
-            result[metric] = accuracy_score(y_true, y_pred, sample_weight=weight)
+        elif metric in ["acc", "accuracy", "precision", "recall"]:
+            # TODO: threshold based class assignment
+            y_class = (y_pred > 0.5).astype(np.int8)
+            if metric in ["acc", "accuracy"]:
+                result[metric] = accuracy_score(y_true, y_class, sample_weight=weight)
+            elif metric == "precision":
+                result[metric] = precision_score(y_true, y_class, sample_weight=weight)
+            elif metric == "recall":
+                result[metric] = recall_score(y_true, y_class, sample_weight=weight)
+        elif metric == "mse":
+            result[metric] = mean_squared_error(y_true, y_pred, sample_weight=weight)
+        elif metric == "mae":
+            result[metric] = mean_absolute_error(y_true, y_pred, sample_weight=weight)
+        elif metric in ["r2", "r2_score"]:
+            result[metric] = r2_score(y_true, y_pred, sample_weight=weight)
         else:
             assert "group_index" in kwargs, "group_index is required for GAUC"
             group_index = kwargs["group_index"]
